@@ -1,0 +1,63 @@
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+LDFLAGS = -lncurses -lpanel -lmenu
+
+SYS_DIR = system
+BUILD_DIR = build
+CHROOT_DIR = chroot_internal
+
+SRCS = $(wildcard $(SYS_DIR)/*.cpp)
+OBJS = $(SRCS:%.cpp=$(BUILD_DIR)/%.o)
+BINS = $(BUILD_DIR)/unixMicroKernel $(BUILD_DIR)/rxsh $(BUILD_DIR)/microbox $(BUILD_DIR)/mde $(BUILD_DIR)/mkboot
+
+.PHONY: all clean install
+
+all: $(BUILD_DIR) $(BINS)
+
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)/system
+	@mkdir -p $(BUILD_DIR)/root
+	@mkdir -p $(BUILD_DIR)/bin
+	@mkdir -p $(BUILD_DIR)/local
+
+# Individual targets
+$(BUILD_DIR)/unixMicroKernel: $(SYS_DIR)/unixMicroKernel.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+$(BUILD_DIR)/rxsh: $(SYS_DIR)/rxsh.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+$(BUILD_DIR)/microbox: $(SYS_DIR)/microbox.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+$(BUILD_DIR)/mde: $(SYS_DIR)/mde.cpp
+	$(CXX) $(CXXFLAGS) $< $(LDFLAGS) -o $@
+
+$(BUILD_DIR)/mkboot: $(SYS_DIR)/mkboot.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+install: all
+	@echo "Installing system components..."
+	@cp $(BUILD_DIR)/unixMicroKernel $(BUILD_DIR)/bin/
+	@cp $(BUILD_DIR)/rxsh $(BUILD_DIR)/bin/
+	@cp $(BUILD_DIR)/microbox $(BUILD_DIR)/bin/
+	@cp $(BUILD_DIR)/mde $(BUILD_DIR)/bin/
+	@cp $(BUILD_DIR)/mkboot $(BUILD_DIR)/bin/
+	@chmod +x $(CHROOT_DIR)/*.sh
+	@echo "Installation complete"
+
+clean:
+	@echo "Cleaning build directory..."
+	@rm -rf $(BUILD_DIR)
+	@echo "Clean complete"
+
+# Development helper targets
+.PHONY: run debug
+
+run: install
+	@echo "Starting Unix V clone..."
+	@$(CHROOT_DIR)/unixRuntimeCall.sh $(BUILD_DIR)
+
+debug: CXXFLAGS += -g -DDEBUG
+debug: clean all
