@@ -1,0 +1,16 @@
+make -f MakeFile debug
+Cleaning build directory...
+Clean complete
+g++ -std=c++17 -Wall -Wextra -g -DDEBUG system/unixMicroKernel.cpp -o build/unixMicroKernel
+g++ -std=c++17 -Wall -Wextra -g -DDEBUG system/rxsh.cpp -o build/rxsh
+ld.lld: error: undefined symbol: readline
+>>> referenced by rxsh.cpp:58 (system/rxsh.cpp:58)
+>>>               /data/data/com.termux/files/usr/tmp/rxsh-4cdb02.o:(RxShell::run())
+>>> did you mean: readlink
+>>> defined in: /system/lib64/libc.so
+
+ld.lld: error: undefined symbol: add_history
+>>> referenced by rxsh.cpp:60 (system/rxsh.cpp:60)
+>>>               /data/data/com.termux/files/usr/tmp/rxsh-4cdb02.o:(RxShell::run())
+g++: error: linker command failed with exit code 1 (use -v to see invocation)
+make: *** [MakeFile:29: build/rxsh] Error 1
